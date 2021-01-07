@@ -25,8 +25,11 @@ import kotlinx.coroutines.runBlocking
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 
-//fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
-fun main(args: Array<String>): Unit =
+fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
+
+@Suppress("unused") // Referenced in application.conf
+@kotlin.jvm.JvmOverloads
+fun Application.module(testing: Boolean = false) {
     runBlocking {
         val server = aSocket(ActorSelectorManager(Dispatchers.IO)).tcp().bind(InetSocketAddress("127.0.0.1", 2323))
         println("Started echo telnet server at ${server.localAddress}")
@@ -51,26 +54,6 @@ fun main(args: Array<String>): Unit =
                     e.printStackTrace()
                     socket.close()
                 }
-            }
-        }
-    }
-
-@Suppress("unused") // Referenced in application.conf
-@kotlin.jvm.JvmOverloads
-fun Application.module(testing: Boolean = false) {
-    val client = HttpClient(Apache) {
-        routing {
-            get("/kek") {
-                call.respondText("Hello Local World!", ContentType.Text.Plain)
-            }
-
-            post("/test2") {
-                val parameters = call.receiveParameters()
-
-                val paramVal1 = parameters["param1"]
-                val paramVal2 = parameters["param2"]
-
-                call.respondText("This is a test POST request with parameter values $paramVal1 and $paramVal2 and params: $parameters")
             }
         }
     }
