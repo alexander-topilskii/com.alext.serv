@@ -39,12 +39,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
     val client = HttpClient(Apache) {
-        install(WebSockets) {
-            pingPeriod = Duration.ofSeconds(60) // Disabled (null) by default
-            timeout = Duration.ofSeconds(15)
-            maxFrameSize = Long.MAX_VALUE // Disabled (max value). The connection will be closed if surpassed this length.
-            masking = false
-        }
+        install(WebSockets)
 
         routing {
             get("/kek") {
@@ -60,13 +55,12 @@ fun Application.module(testing: Boolean = false) {
                 call.respondText("This is a test POST request with parameter values $paramVal1 and $paramVal2 and params: $parameters")
             }
 
-            webSocket("/ws") {
-                for (frame in incoming.mapNotNull { it as? Frame.Text }) {
-                    val text = frame.readText()
-                    outgoing.send(Frame.Text("YOU SAID $text"))
-                    if (text.equals("bye", ignoreCase = true)) {
-                        close(CloseReason(CloseReason.Codes.NORMAL, "Client said BYE"))
-                    }
+            webSocket("/chat") {
+                send("You are connected!")
+                for(frame in incoming) {
+                    frame as? Frame.Text ?: continue
+                    val receivedText = frame.readText()
+                    send("You said: $receivedText")
                 }
             }
 
