@@ -5,6 +5,10 @@ import io.ktor.response.*
 import io.ktor.client.*
 import io.ktor.client.engine.apache.*
 import io.ktor.http.ContentType
+import io.ktor.http.cio.websocket.*
+import io.ktor.http.content.defaultResource
+import io.ktor.http.content.resources
+import io.ktor.http.content.static
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.aSocket
@@ -18,11 +22,15 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.cio.write
 import io.ktor.utils.io.readUTF8Line
+import io.ktor.websocket.WebSockets
+import io.ktor.websocket.webSocket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.channels.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.net.InetSocketAddress
+import java.time.Duration
 import java.util.concurrent.Executors
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -30,34 +38,40 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
-    runBlocking {
-        val server = aSocket(ActorSelectorManager(Dispatchers.IO)).tcp().bind(InetSocketAddress("127.0.0.1", 8080))
-        println("Started echo telnet server at ${server.localAddress}")
+    val client = HttpClient(Apache) {
+        install(WebSockets) {
+            pingPeriod = Duration.ofSeconds(60) // Disabled (null) by default
+            timeout = Duration.ofSeconds(15)
+            maxFrameSize = Long.MAX_VALUE // Disabled (max value). The connection will be closed if surpassed this length.
+            masking = false
+        }
 
-        while (true) {
-            val socket = server.accept()
+        routing {
+            get("/kek") {
+                call.respondText("Hello Local World!", ContentType.Text.Plain)
+            }
 
-            launch {
-                println("Socket accepted: ${socket.remoteAddress}")
+            post("/test2") {
+                val parameters = call.receiveParameters()
 
-                val input = socket.openReadChannel()
-                val output = socket.openWriteChannel(autoFlush = true)
+                val paramVal1 = parameters["param1"]
+                val paramVal2 = parameters["param2"]
 
-                try {
-                    while (true) {
-                        val line = input.readUTF8Line()
+                call.respondText("This is a test POST request with parameter values $paramVal1 and $paramVal2 and params: $parameters")
+            }
 
-                        println("${socket.remoteAddress}: $line")
-                        output.write("$line\r\n")
+            webSocket("/ws") {
+                for (frame in incoming.mapNotNull { it as? Frame.Text }) {
+                    val text = frame.readText()
+                    outgoing.send(Frame.Text("YOU SAID $text"))
+                    if (text.equals("bye", ignoreCase = true)) {
+                        close(CloseReason(CloseReason.Codes.NORMAL, "Client said BYE"))
                     }
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                    socket.close()
                 }
             }
+
         }
     }
-
 
 }
 
