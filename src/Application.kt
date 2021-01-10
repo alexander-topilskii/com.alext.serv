@@ -1,6 +1,6 @@
 package com.alext.serv
 
-import com.alext.serv.entities.requests.RoomResponse
+import com.alext.serv.entities.requests.RoomRequest
 import com.alext.serv.entities.requests.RoomSettingsRequest
 import com.alext.serv.entities.requests.SuccessResponse
 import io.ktor.application.Application
@@ -20,14 +20,10 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.serialization.json
-import io.ktor.util.Identity.decode
-import io.ktor.util.Identity.encode
 import io.ktor.websocket.WebSockets
 import io.ktor.websocket.webSocket
-import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.Json.Default.encodeToString
 import java.time.Duration
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -48,23 +44,21 @@ fun Application.module(testing: Boolean = false) {
         }
 
         routing {
-            get("/kek") {
-                call.respondText("Hello Local World!", ContentType.Text.Plain)
-            }
 
-            get("/getRoom") {
+            get("/getRoom/{roomName}") {
+                println("GGGG: getRoom ")
                 val roomName = call.parameters["roomName"]
 
                 try {
-                    val settings = controller.getRoom(roomName)
-
-                    call.respond(settings)
+                    val room = controller.getRoom(roomName)
+                    call.respond(room)
                 } catch (e: Throwable) {
                     call.respond(HttpStatusCode(500, e.message!!))
                 }
             }
 
             post("/setRoomSettings") {
+                println("GGGG: setRoomSettings")
                 val roomSettingsRequest = call.receive<RoomSettingsRequest>()
 
                 try {
@@ -74,12 +68,11 @@ fun Application.module(testing: Boolean = false) {
                 } catch (e: Throwable) {
                     call.respond(HttpStatusCode(500, e.message!!))
                 }
-
-                call.respondText("Hello Local World!", ContentType.Text.Plain)
             }
 
             post("/createRoom") {
-                val roomResponse = call.receive<RoomResponse>()
+                println("GGGG: createRoom")
+                val roomResponse = call.receive<RoomRequest>()
 
                 try {
                     controller.createRoom(roomResponse)
@@ -91,7 +84,9 @@ fun Application.module(testing: Boolean = false) {
             }
 
             post("/enterRoom") {
-                val roomResponse = call.receive<RoomResponse>()
+                println("GGGG: enter room")
+
+                val roomResponse = call.receive<RoomRequest>()
 
                 try {
                     controller.enterRoom(roomResponse)
@@ -111,16 +106,14 @@ fun Application.module(testing: Boolean = false) {
             }
 
             webSocket("/observeRoom/{room_id}") {
-                val room_id = call.parameters["room_id"]
-                println("GGGG: observeRoom $room_id")
+                val roomId = call.parameters["room_id"]
+                println("GGGG: observeRoom $roomId")
 
                 for (frame in incoming) {
-                    val room = controller.getRoom(room_id)
+                    val room = controller.getRoom(roomId)
                     val json = Json.encodeToString(room)
 
                     send(json)
-
-
                 }
 
 

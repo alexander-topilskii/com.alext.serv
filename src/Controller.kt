@@ -3,7 +3,7 @@ package com.alext.serv
 import com.alext.serv.entities.Room
 import com.alext.serv.entities.Settings
 import com.alext.serv.entities.User
-import com.alext.serv.entities.requests.RoomResponse
+import com.alext.serv.entities.requests.RoomRequest
 import com.alext.serv.entities.requests.RoomSettingsRequest
 import com.alext.serv.exceptions.NoRoomException
 import com.alext.serv.exceptions.UnknownException
@@ -12,8 +12,8 @@ class Controller {
 
     private val rooms = hashMapOf<String, Room>()
 
-    fun createRoom(roomResponse: RoomResponse?) {
-        roomResponse?.let {
+    fun createRoom(roomRequest: RoomRequest?) {
+        roomRequest?.let {
             rooms[it.roomName] = Room(
                 it.roomName,
                 mutableListOf(User(it.userName, true)),
@@ -22,8 +22,8 @@ class Controller {
         }
     }
 
-    fun enterRoom(roomResponse: RoomResponse?) {
-        roomResponse?.let {
+    fun enterRoom(roomRequest: RoomRequest?) {
+        roomRequest?.let {
             rooms[it.roomName]?.let { room ->
                 room.apply {
                     users.add(User(it.userName, false))
