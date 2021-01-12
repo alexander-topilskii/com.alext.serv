@@ -44,7 +44,9 @@ fun Application.module(testing: Boolean = false) {
         }
 
         routing {
-
+            get("/test") {
+                call.respondText("Hello Local World!", ContentType.Text.Plain)
+            }
             get("/getRoom/{roomName}") {
                 println("GGGG: getRoom ")
                 val roomName = call.parameters["roomName"]
