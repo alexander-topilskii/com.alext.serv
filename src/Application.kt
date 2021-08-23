@@ -44,6 +44,14 @@ fun Application.module(testing: Boolean = false) {
         }
 
         routing {
+            get("/qrError") {
+                call.respond(HttpStatusCode(500, "kek cheburek"))
+            }
+            get("/qr1") {
+                call.respond(controller.getQr1())
+            }
+
+
             get("/test") {
                 call.respondText("Hello Local World!", ContentType.Text.Plain)
             }
@@ -98,28 +106,6 @@ fun Application.module(testing: Boolean = false) {
                 }
             }
 
-            webSocket("/chat") {
-                send("You are connected!")
-                for (frame in incoming) {
-                    frame as? Frame.Text ?: continue
-                    val receivedText = frame.readText()
-                    send("You said: $receivedText")
-                }
-            }
-
-            webSocket("/observeRoom/{room_id}") {
-                val roomId = call.parameters["room_id"]
-                println("GGGG: observeRoom $roomId")
-
-                for (frame in incoming) {
-                    val room = controller.getRoom(roomId)
-                    val json = Json.encodeToString(room)
-
-                    send(json)
-                }
-
-
-            }
 
         }
     }

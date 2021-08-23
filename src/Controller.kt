@@ -5,10 +5,17 @@ import com.alext.serv.entities.Settings
 import com.alext.serv.entities.User
 import com.alext.serv.entities.requests.RoomRequest
 import com.alext.serv.entities.requests.RoomSettingsRequest
+import com.alext.serv.entities.requests.jsp.qrJson1
 import com.alext.serv.exceptions.NoRoomException
 import com.alext.serv.exceptions.UnknownException
+import entities.requests.jsp.QrCode
+import kotlinx.serialization.*
+import kotlinx.serialization.json.*
 
 class Controller {
+
+
+    fun getQr1(): QrCode = Json.decodeFromString<QrCode>(qrJson1)
 
     private val rooms = hashMapOf<String, Room>()
 
