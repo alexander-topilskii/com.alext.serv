@@ -44,11 +44,18 @@ fun Application.module(testing: Boolean = false) {
         }
 
         routing {
-            get("/qrError") {
+            get("/ ") {
                 call.respond(HttpStatusCode(500, "kek cheburek"))
             }
             get("/qr1") {
                 call.respond(controller.getQr1())
+            }
+
+            post("/qrpost1") {
+                call.respond(controller.getQrSuccess())
+            }
+            post("/qrpost2") {
+                call.respond(controller.getQrSopd())
             }
 
 

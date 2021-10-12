@@ -5,6 +5,8 @@ import com.alext.serv.entities.Settings
 import com.alext.serv.entities.User
 import com.alext.serv.entities.requests.RoomRequest
 import com.alext.serv.entities.requests.RoomSettingsRequest
+import com.alext.serv.entities.requests.jsp.jsonSopdPost
+import com.alext.serv.entities.requests.jsp.jsonSuccessPost
 import com.alext.serv.entities.requests.jsp.qrJson1
 import com.alext.serv.exceptions.NoRoomException
 import com.alext.serv.exceptions.UnknownException
@@ -16,6 +18,8 @@ class Controller {
 
 
     fun getQr1(): QrCode = Json.decodeFromString<QrCode>(qrJson1)
+    fun getQrSuccess(): QrCode = Json.decodeFromString<QrCode>(jsonSuccessPost)
+    fun getQrSopd(): QrCode = Json.decodeFromString<QrCode>(jsonSopdPost)
 
     private val rooms = hashMapOf<String, Room>()
 

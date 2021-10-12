@@ -54,3 +54,41 @@ const val qrJson1 = """
   }
 }
 """
+
+const val jsonSuccessPost = """
+    {
+    "qr": {
+        "qrBase64": "String",
+        "membershipNumber": {
+            "title": "Membership number:",
+            "value": 14014700146397
+        },
+        "cardholderName": {
+            "title": "Держатель:",
+            "value": "MR JOHN SMITH"
+        }
+    },
+    "expire": {
+        "expiryText": "Действует до 25.12.2021",
+        "isDate": true
+    },
+    "sopd": null          
+}
+"""
+
+const val jsonSopdPost ="""
+    {
+    "qr": null,
+    "expire": null,
+    "sopd": {
+        "title": "Подпишите согласие на обработку персональных данных",
+        "subtitle": "Ваши данные в безопасности, просто уведомляем партнёра о ваших визитах",
+        "doc": {
+            "description": "Я даю своё",
+            "docName": "согласие на обработку персональных данных",
+            "url": "String"
+        },
+        "buttonText": "Подписать"
+    }            
+}
+"""
